@@ -665,14 +665,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 }
 - (void)setFlashMode:(int)flashMode {
     if (!_captureDevice.hasFlash) {
-        [self setFlashMode: AVCaptureFlashModeOff];
+        _flashMode = AVCaptureFlashModeOff;
     } else {
-        [self setFlashMode:flashMode level:1.0];
+        _flashMode = flashMode;
     }
-}
-
-- (void)setFlashMode:(int)flashMode level:(float)level {
-    _flashMode = flashMode;
 }
 
 - (void)setAutoExposureMode:(BOOL)enable {
@@ -929,7 +925,9 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
                                    stringWithFormat:@"flutter.io/cameraPlugin/cameraEvents%lld",
                                                     textureId]
                binaryMessenger:_messenger];
-      [eventChannel setStreamHandler:cam];
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [eventChannel setStreamHandler:cam];
+      });
       cam.eventChannel = eventChannel;
       result(@{
         @"textureId" : @(textureId),
