@@ -48,12 +48,12 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -102,9 +102,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               decoration: BoxDecoration(
                 color: Colors.black,
                 border: Border.all(
-                  color: controller != null && controller!.value.isRecordingVideo!
-                      ? Colors.redAccent
-                      : Colors.grey,
+                  color:
+                      controller != null && controller!.value.isRecordingVideo!
+                          ? Colors.redAccent
+                          : Colors.grey,
                   width: 3.0,
                 ),
               ),
@@ -316,9 +317,10 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               title: Icon(getCameraLensIcon(cameraDescription.lensDirection)),
               groupValue: controller?.description,
               value: cameraDescription,
-              onChanged: controller != null && controller!.value.isRecordingVideo!
-                  ? null
-                  : onNewCameraSelected,
+              onChanged:
+                  controller != null && controller!.value.isRecordingVideo!
+                      ? null
+                      : onNewCameraSelected,
             ),
           ),
         );
@@ -480,7 +482,7 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
     final VideoPlayerController vcontroller =
         VideoPlayerController.file(File(videoPath));
     videoPlayerListener = () {
-      if (videoController != null && videoController!.value.size != null) {
+      if (videoController != null) {
         // Refreshing the state to update video player with the correct ratio.
         if (mounted) setState(() {});
         videoController!.removeListener(videoPlayerListener);
@@ -533,9 +535,7 @@ class CameraApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        accentTextTheme: TextTheme(body2: TextStyle(color: Colors.white)),
-      ),
+      theme: ThemeData(),
       home: CameraExampleHome(),
     );
   }
