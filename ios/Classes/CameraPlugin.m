@@ -665,14 +665,10 @@ FourCharCode const videoFormat = kCVPixelFormatType_32BGRA;
 }
 - (void)setFlashMode:(int)flashMode {
     if (!_captureDevice.hasFlash) {
-        [self setFlashMode: AVCaptureFlashModeOff];
+        _flashMode = AVCaptureFlashModeOff;
     } else {
-        [self setFlashMode:flashMode level:1.0];
+        _flashMode = flashMode;
     }
-}
-
-- (void)setFlashMode:(int)flashMode level:(float)level {
-    _flashMode = flashMode;
 }
 
 - (void)setAutoExposureMode:(BOOL)enable {
