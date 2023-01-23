@@ -6,6 +6,9 @@ import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -330,11 +333,11 @@ public class Camera {
         null);
   }
 
-  private void writeToFile(ByteBuffer buffer, File file) throws IOException {
+  private void writeToFile(Bitmap bitmap, File file) throws IOException {
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
-      while (0 < buffer.remaining()) {
-        outputStream.getChannel().write(buffer);
-      }
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+      outputStream.flush();
+      outputStream.close();
     }
   }
 
@@ -536,7 +539,11 @@ public class Camera {
         reader -> {
           try (Image image = reader.acquireLatestImage()) {
             ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-            writeToFile(buffer, file);
+            byte[] bytes = new byte[buffer.capacity()];
+            buffer.get(bytes);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+            bitmap = rotateImage(bitmap, getMediaOrientation());
+            writeToFile(bitmap, file);
             result.success(null);
           } catch (IOException e) {
             result.error("IOError", "Failed saving image", null);
@@ -578,9 +585,6 @@ public class Camera {
             break;
         }
       }
-
-      captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getMediaOrientation());
-
 
       mCaptureSession.capture(
           captureBuilder.build(),
@@ -1135,4 +1139,13 @@ public class Camera {
     }
     return false;
   }
+
+    public Bitmap rotateImage(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        Bitmap bitmap = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix,
+                true);
+
+        return bitmap;
+    }
 }
