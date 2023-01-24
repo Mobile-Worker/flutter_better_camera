@@ -335,7 +335,7 @@ public class Camera {
 
   private void writeToFile(Bitmap bitmap, File file) throws IOException {
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
-      bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
+      bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
       outputStream.flush();
       outputStream.close();
     }
