@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -57,21 +56,14 @@ typedef onLatestImageAvailable = Function(CameraImage image);
 
 /// Returns the resolution preset as a String.
 String serializeResolutionPreset(ResolutionPreset resolutionPreset) {
-  switch (resolutionPreset) {
-    case ResolutionPreset.max:
-      return 'max';
-    case ResolutionPreset.ultraHigh:
-      return 'ultraHigh';
-    case ResolutionPreset.veryHigh:
-      return 'veryHigh';
-    case ResolutionPreset.high:
-      return 'high';
-    case ResolutionPreset.medium:
-      return 'medium';
-    case ResolutionPreset.low:
-      return 'low';
-  }
-  throw ArgumentError('Unknown ResolutionPreset value');
+  return switch (resolutionPreset) {
+    ResolutionPreset.max => 'max',
+    ResolutionPreset.ultraHigh => 'ultraHigh',
+    ResolutionPreset.veryHigh => 'veryHigh',
+    ResolutionPreset.high => 'high',
+    ResolutionPreset.medium => 'medium',
+    ResolutionPreset.low => 'low'
+  };
 }
 
 CameraLensDirection _parseCameraLensDirection(String? string) {
@@ -92,7 +84,8 @@ CameraLensDirection _parseCameraLensDirection(String? string) {
 Future<List<CameraDescription>> availableCameras() async {
   try {
     final List<Map<dynamic, dynamic>> cameras = (await _channel
-        .invokeListMethod<Map<dynamic, dynamic>>('availableCameras')) as List<Map<dynamic, dynamic>>;
+            .invokeListMethod<Map<dynamic, dynamic>>('availableCameras'))
+        as List<Map<dynamic, dynamic>>;
     return cameras.map((Map<dynamic, dynamic> camera) {
       return CameraDescription(
         name: camera['name'],
@@ -129,7 +122,7 @@ class CameraDescription {
 
   @override
   int get hashCode {
-    return hashValues(name, lensDirection);
+    return Object.hash(name, lensDirection);
   }
 
   @override
@@ -179,14 +172,13 @@ class CameraValue {
 
   const CameraValue.uninitialized()
       : this(
-      isInitialized: false,
-      isRecordingVideo: false,
-      isTakingPicture: false,
-      isStreamingImages: false,
-      isRecordingPaused: false,
-      autoFocusEnabled: true,
-      flashMode: FlashMode.off
-  );
+            isInitialized: false,
+            isRecordingVideo: false,
+            isTakingPicture: false,
+            isStreamingImages: false,
+            isRecordingPaused: false,
+            autoFocusEnabled: true,
+            flashMode: FlashMode.off);
 
   /// True after [CameraController.initialize] has completed successfully.
   final bool? isInitialized;
@@ -199,7 +191,6 @@ class CameraValue {
 
   /// FlashMode
   final FlashMode? flashMode;
-
 
   /// True when the camera is recording (not the same as previewing).
   final bool? isRecordingVideo;
@@ -226,17 +217,16 @@ class CameraValue {
 
   bool get hasError => errorDescription != null;
 
-  CameraValue copyWith({
-    bool? isInitialized,
-    bool? isRecordingVideo,
-    bool? isTakingPicture,
-    bool? isStreamingImages,
-    String? errorDescription,
-    Size? previewSize,
-    bool? isRecordingPaused,
-    bool? autoFocusEnabled,
-    FlashMode? flashMode
-  }) {
+  CameraValue copyWith(
+      {bool? isInitialized,
+      bool? isRecordingVideo,
+      bool? isTakingPicture,
+      bool? isStreamingImages,
+      String? errorDescription,
+      Size? previewSize,
+      bool? isRecordingPaused,
+      bool? autoFocusEnabled,
+      FlashMode? flashMode}) {
     return CameraValue(
       isInitialized: isInitialized ?? this.isInitialized,
       errorDescription: errorDescription,
@@ -270,13 +260,12 @@ class CameraValue {
 ///
 /// To show the camera preview on the screen use a [CameraPreview] widget.
 class CameraController extends ValueNotifier<CameraValue> {
-  CameraController(this.description,
-      this.resolutionPreset, {
-        this.enableAudio = true,
-        this.autoFocusEnabled = true,
-        this.flashMode = FlashMode.off,
-        this.enableAutoExposure = true
-      }) : super(const CameraValue.uninitialized());
+  CameraController(this.description, this.resolutionPreset,
+      {this.enableAudio = true,
+      this.autoFocusEnabled = true,
+      this.flashMode = FlashMode.off,
+      this.enableAutoExposure = true})
+      : super(const CameraValue.uninitialized());
 
   final CameraDescription description;
   final ResolutionPreset resolutionPreset;
@@ -305,7 +294,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     try {
       _creatingCompleter = Completer<void>();
       final Map<String, dynamic> reply =
-      (await _channel.invokeMapMethod<String, dynamic>(
+          (await _channel.invokeMapMethod<String, dynamic>(
         'initialize',
         <String, dynamic>{
           'cameraName': description.name,
@@ -327,7 +316,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
-    
+
     _eventSubscription =
         EventChannel('flutter.io/cameraPlugin/cameraEvents$_textureId')
             .receiveBroadcastStream()
@@ -369,7 +358,6 @@ class CameraController extends ValueNotifier<CameraValue> {
         break;
     }
   }
-
 
   /// Captures an image and saves it to [path].
   ///
@@ -446,13 +434,13 @@ class CameraController extends ValueNotifier<CameraValue> {
       throw CameraException(e.code, e.message);
     }
     const EventChannel cameraEventChannel =
-    EventChannel('plugins.flutter.io/camera/imageStream');
+        EventChannel('plugins.flutter.io/camera/imageStream');
     _imageStreamSubscription =
         cameraEventChannel.receiveBroadcastStream().listen(
-              (dynamic imageData) {
-            onAvailable(CameraImage._fromPlatformData(imageData));
-          },
-        );
+      (dynamic imageData) {
+        onAvailable(CameraImage._fromPlatformData(imageData));
+      },
+    );
   }
 
   /// Stop streaming images from platform camera.
@@ -693,6 +681,4 @@ class CameraController extends ValueNotifier<CameraValue> {
       await _eventSubscription?.cancel();
     }
   }
-
-
 }
